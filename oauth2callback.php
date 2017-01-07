@@ -1,4 +1,6 @@
 <?php
+use Base\DB;
+
 require_once 'vendor/autoload.php';
 
 if(file_exists('.env')) {
