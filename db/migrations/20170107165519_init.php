@@ -6,7 +6,7 @@ class Init extends AbstractMigration
 {
     public function change()
     {
-        $this->table('user')
+        $this->table('userdata')
             ->addColumn('token', 'string')
             ->addColumn('telegram_id', 'integer', ['null' => true])
             ->addColumn('md5token', 'string', ['length' => 32])
