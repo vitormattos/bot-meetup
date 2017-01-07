@@ -46,7 +46,7 @@ if (!isset($_GET['code'])) {
 
         $instance = DB::getInstance();
         try {
-            $sth = $instance->perform('INSERT INTO user (token, md5token) VALUES(:token, :md5token) RETURNING md5token;', [
+            $sth = $instance->perform('INSERT INTO "user" (token, md5token) VALUES(:token, :md5token) RETURNING md5token;', [
                 'token' => $accessToken->getToken(),
                 'md5token' => md5($accessToken->getToken())
             ]);

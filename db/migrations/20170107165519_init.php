@@ -8,7 +8,7 @@ class Init extends AbstractMigration
     {
         $this->table('user')
             ->addColumn('token', 'string')
-            ->addColumn('telegram_id', 'integer')
+            ->addColumn('telegram_id', 'integer', ['null' => true])
             ->addColumn('md5token', 'string', ['length' => 32])
             ->addTimestamps()
             ->addIndex(['telegram_id'], ['unique' => true])
