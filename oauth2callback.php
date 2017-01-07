@@ -1,8 +1,10 @@
 <?php
 require_once 'vendor/autoload.php';
 
-$dotenv = new Dotenv\Dotenv(__DIR__);
-$dotenv->load();
+if(file_exists('.env')) {
+    $dotenv = new Dotenv\Dotenv(__DIR__);
+    $dotenv->load();
+}
 
 session_start();
 

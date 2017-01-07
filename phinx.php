@@ -1,6 +1,8 @@
 <?php
-$dotenv = new Dotenv\Dotenv(__DIR__);
-$dotenv->load();
+if(file_exists('.env')) {
+    $dotenv = new Dotenv\Dotenv(__DIR__);
+    $dotenv->load();
+}
 
 $dbopts = parse_url(getenv('DATABASE_URL'));
 
