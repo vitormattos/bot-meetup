@@ -1,60 +1,63 @@
 <?php
-use DMS\Service\Meetup\MeetupKeyAuthClient;
-
 require_once 'vendor/autoload.php';
 
-if (!empty($_GET['error'])) {
+$dotenv = new Dotenv\Dotenv(__DIR__);
+$dotenv->load();
 
-    // Got an error, probably user denied access
-    exit('Got error: ' . $_GET['error']);
+session_start();
 
-} elseif (empty($_GET['code'])) {
+$provider = new \League\OAuth2\Client\Provider\GenericProvider([
+    'clientId'                => getenv('CLIENT_ID'),
+    'clientSecret'            => getenv('CLIENT_SECRET'),
+    'redirectUri'             => getenv('REDIRECT_URI'),
+    'urlAuthorize'            => 'https://secure.meetup.com/oauth2/authorize',
+    'urlAccessToken'          => 'https://secure.meetup.com/oauth2/access',
+    'urlResourceOwnerDetails' => 'https://api.meetup.com/2/member/self'
+]);
 
-    // If we don't have an authorization code then get one
-    $client = MeetupKeyAuthClient::factory([
-        //'key' => '2025654a2a5c4e1a3d535358217d4749',
-        'key' => 'udvnirod9gdad1anulm4auti6i',
-        //'consumer_key' => 'udvnirod9gdad1anulm4auti6i',
-        //'consumer_secret' => 'vv1bga9hg1otb31dn8mo7ncg4r'
-    ]);
-    $tokenResponse = $client->getRequestToken();
-    $authUrl = 'http://www.meetup.com/authorize/?oauth_token=' . $tokenResponse['oauth_token'];
-    header('Location: ' . $authUrl);
+// If we don't have an authorization code then get one
+if (!isset($_GET['code'])) {
+
+    // Fetch the authorization URL from the provider; this returns the
+    // urlAuthorize option and generates and applies any necessary parameters
+    // (e.g. state).
+    $authorizationUrl = $provider->getAuthorizationUrl();
+
+    // Get the state generated for you and store it to the session.
+    $_SESSION['oauth2state'] = $provider->getState();
+
+    // Redirect the user to the authorization URL.
+    header('Location: ' . $authorizationUrl);
     exit;
-
+    // Check given state against previously stored one to mitigate CSRF attack
+} elseif (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
+    unset($_SESSION['oauth2state']);
+    exit('Invalid state');
 } else {
-
-    // Try to get an access token (using the authorization code grant)
-    $token = $provider->getAccessToken('authorization_code', [
-        'code' => $_GET['code']
-    ]);
-
-    // Optional: Now you have a token you can look up a users profile data
     try {
-
-        // We got an access token, let's now get the owner details
-        $ownerDetails = $provider->getResourceOwner($token);
+        // Try to get an access token using the authorization code grant.
+        $accessToken = $provider->getAccessToken('authorization_code', [
+            'code' => $_GET['code']
+        ]);
 
         $instance = DB::getInstance();
         try {
-            $sth = $instance->perform('INSERT INTO users (token, md5token) VALUES(:token, :md5token) RETURNING md5token;', [
-                'token' => $token->getToken(),
-                'md5token' => md5($token->getToken())
+            $sth = $instance->perform('INSERT INTO user (token, md5token) VALUES(:token, :md5token) RETURNING md5token;', [
+                'token' => $accessToken->getToken(),
+                'md5token' => md5($accessToken->getToken())
             ]);
             $md5token = $sth->fetchColumn();
-            header('Location: https://telegram.me/olxbrbot?start='.$md5token);
+            header(
+                'Location: https://telegram.me/'.getenv('TELEGRAM_USERNAME').
+                '?start='.$md5token
+            );
         } catch(Exception $e) {
             echo $e->getMessage();
         }
-
-        // Use these details to create a new profile
-        printf('Hello %s!', $ownerDetails->getFirstName());
-
-    } catch (Exception $e) {
-
-        // Failed to get user details
-        exit('Something went wrong: ' . $e->getMessage());
-
+        exit;
+    } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
+        // Failed to get the access token or user details.
+        exit($e->getMessage());
     }
 
 }

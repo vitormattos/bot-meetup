@@ -1,5 +1,17 @@
 {
     "require": {
-        "dms/meetup-api-client": "^2.3"
+        "league/oauth2-client": "^1.4",
+        "vlucas/phpdotenv": "^2.4",
+        "aura/sql": "^2.5",
+        "robmorgan/phinx": "^0.6.5"
+    },
+    "autoload":{
+        "psr-4":{
+            "Commands\\":"src/Commands/",
+            "Base\\":"src/base/"
+        }
+    },
+    "scripts": {
+        "post-update-cmd": "vendor/bin/phinx migrate"
     }
 }
