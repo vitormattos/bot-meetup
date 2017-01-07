@@ -1,4 +1,7 @@
 <?php
+use Telegram\Bot\Api;
+use Telegram\Bot\Objects\Update;
+
 require 'vendor/autoload.php';
 
 if(file_exists('.env')) {
@@ -21,7 +24,7 @@ $telegram->addCommands([
     Commands\StartCommand::class
 ]);
 
-$update = $telegram->getWebhookUpdates();
+$update = $telegram->commandsHandler(true);
 if($update->has('message')) {
     $message = $update->getMessage();
     if($message->has('text')) {

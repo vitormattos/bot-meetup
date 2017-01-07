@@ -3,7 +3,8 @@
         "league/oauth2-client": "^1.4",
         "vlucas/phpdotenv": "^2.4",
         "aura/sql": "^2.5",
-        "robmorgan/phinx": "^0.6.5"
+        "robmorgan/phinx": "^0.6.5",
+        "irazasyed/telegram-bot-sdk": "dev-master"
     },
     "autoload":{
         "psr-4":{
