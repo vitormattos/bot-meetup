@@ -10,11 +10,14 @@ class DB
     public static function getInstance()
     {
         if(self::$db) {
-            return $db;
+            return self::$db;
         }
         $dbopts = parse_url(getenv('DATABASE_URL'));
+        if($dbopts['scheme'] == 'postgres') {
+            $dbopts['scheme'] = 'pgsql';
+        }
         self::$db = new ExtendedPdo(
-            "pgsql:host={$dbopts["host"]};port={$dbopts["port"]};dbname=".ltrim($dbopts["path"],'/'),
+            "{$dbopts['scheme']}:host={$dbopts["host"]};port={$dbopts["port"]};dbname=".ltrim($dbopts["path"],'/'),
             $dbopts['user'],
             $dbopts['pass']
         );

@@ -21,6 +21,7 @@ if(file_exists('.env')) {
 
 // Classic commands
 $telegram->addCommands([
+    Telegram\Bot\Commands\HelpCommand::class,
     Commands\StartCommand::class
 ]);
 

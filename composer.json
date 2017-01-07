@@ -3,6 +3,7 @@
         "league/oauth2-client": "^1.4",
         "vlucas/phpdotenv": "^2.4",
         "aura/sql": "^2.5",
+        "aura/sqlquery": "^2.7",
         "robmorgan/phinx": "^0.6.5",
         "irazasyed/telegram-bot-sdk": "dev-master"
     },
