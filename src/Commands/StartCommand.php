@@ -125,8 +125,13 @@ class StartCommand extends Command
         if(!$token) {
             throw new \Exception('É preciso autenticar-se.', 1);
         }
-        if(!$token['access_token']
-            || ($oauth2state && $token['oauth2state'] != $oauth2state)) {
+        if(!$token['access_token']) {
+            $db->perform('DELETE FROM userdata WHERE telegram_id = :telegram_id', [
+                'telegram_id' => $telegram_id
+            ]);
+            throw new \Exception('É preciso autenticar-se.', 1);
+        }
+        if($oauth2state && $token['oauth2state'] != $oauth2state) {
             $db->perform('DELETE FROM userdata WHERE telegram_id = :telegram_id', [
                 'telegram_id' => $telegram_id
             ]);
