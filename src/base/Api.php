@@ -1,8 +1,6 @@
 <?php
 namespace Base;
 
-use function GuzzleHttp\json_decode;
-use Base32\Base32;
 use Telegram\Bot\Objects\InlineQuery\InlineQueryResultArticle;
 
 class Api extends \Telegram\Bot\Api
@@ -47,9 +45,8 @@ class Api extends \Telegram\Bot\Api
                     $params['next_offset'] = '';
                 }
                 foreach($response['results'] as $result) {
-                    $encoded = rtrim(Base32::encode(gzdeflate($result['name'], 9)), '=');
                     $items = [
-                        'id' => substr($encoded, 0, 63),
+                        'id' => $result['id'],
                         'title' => $result['name'],
                         'message_text' => $result['name'],
                         'description' => $result['name'],

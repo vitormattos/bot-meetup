@@ -5,8 +5,7 @@
         "aura/sql": "^2.5",
         "aura/sqlquery": "^2.7",
         "league/oauth2-client": "^1.4",
-        "vlucas/phpdotenv": "^2.4",
-        "christian-riesen/base32": "^1.3"
+        "vlucas/phpdotenv": "^2.4"
     },
     "autoload":{
         "psr-4":{
