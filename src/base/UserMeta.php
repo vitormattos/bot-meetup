@@ -1,5 +1,8 @@
 <?php
 namespace Base;
+use Aura\SqlQuery\QueryFactory;
+use League\OAuth2\Client\Token\AccessToken;
+
 class UserMeta
 {
     /**

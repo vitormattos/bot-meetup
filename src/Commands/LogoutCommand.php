@@ -4,17 +4,11 @@ namespace Commands;
 
 use Telegram\Bot\Commands\Command;
 use Base\DB;
-use League\OAuth2\Client\Token\AccessToken;
 use Base\Meetup;
-use Telegram\Bot\Keyboard\Keyboard;
-use Aura\SqlQuery\QueryFactory;
-use Aura\Sql\Exception;
-use Telegram\Bot\Helpers\Emojify;
-use Base\UserMeta;
 /**
- * Class StartCommand.
+ * Class LogoutCommand.
  */
-class StartCommand extends Command
+class LogoutCommand extends Command
 {
     /**
      * @var string Command Name
@@ -29,7 +23,7 @@ class StartCommand extends Command
     /**
      * {@inheritdoc}
      */
-    public function handle()
+    public function handle($arguments)
     {
         $message = $this->update->getMessage();
         $telegram_id = $message->getFrom()->getId();
