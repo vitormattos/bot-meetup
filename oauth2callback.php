@@ -11,7 +11,7 @@ if(file_exists('.env')) {
 }
 
 // If we don't have an authorization code then get one
-if (!isset($_GET['code'])) {
+if (!isset($_GET['code']) || !preg_match('/^[a-f0-9]{32}$/', $_GET['code'])) {
     exit('Invalid access');
 } else {
     try {
@@ -30,15 +30,14 @@ if (!isset($_GET['code'])) {
             ->set('updated_at', 'now()')
             ->bindValue('token', $accessToken->getToken())
             ->where('oauth2state = :state')
-            ->bindValue('state', $md5token = md5($_GET['state']));
+            ->bindValue('state', $oauth2state = $_GET['state']);
         $sth = $db->prepare($update->getStatement());
         $sth->execute($update->getBindValues());
 
         header(
             'Location: https://telegram.me/'.getenv('TELEGRAM_USERNAME').
-            '?start='.$md5token
+            '?start='.$oauth2state
         );
-        exit;
     } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
         // Failed to get the access token or user details.
         exit($e->getMessage());

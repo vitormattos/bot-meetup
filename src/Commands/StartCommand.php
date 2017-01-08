@@ -51,7 +51,7 @@ class StartCommand extends Command
 
             $db = DB::getInstance();
             $sth = $db->perform('INSERT INTO userdata (oauth2state, telegram_id) VALUES(:oauth2state, :telegram_id);', [
-                'oauth2state' => md5($provider->getState()),
+                'oauth2state' => $provider->getState(),
                 'telegram_id' => $telegram_id
             ]);
 

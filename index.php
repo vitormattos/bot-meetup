@@ -7,39 +7,37 @@ require 'vendor/autoload.php';
 if(file_exists('.env')) {
     $dotenv = new Dotenv\Dotenv(__DIR__);
     $dotenv->load();
-    class mockApi extends Api{
-        public function getWebhookUpdates($emitUpdateWasReceivedEvent = true) {
+    class mockApi extends \Base\Api{
+        public function getWebhookUpdate($emitUpdateWasReceivedEvent = true) {
             return new Update(json_decode(getenv('MOCK_JSON'), true));
         }
     }
     $telegram = new mockApi();
 } else {
     error_log(file_get_contents('php://input'));
-    $telegram = new Api();
+    $telegram = new \Base\Api();
 }
-
 
 // Classic commands
 $telegram->addCommands([
     \Commands\HelpCommand::class,
     \Commands\StartCommand::class,
-    \Commands\LogoutCommand::class
+    \Commands\LogoutCommand::class,
+    \Commands\AboutCommand::class
 ]);
 
-$update = $telegram->getWebhookUpdates();
-if($update->has('message')) {
-    $message = $update->getMessage();
-    if($message->has('text')) {
-        switch($text = $message->getText()) {
-            case '/about':
-                $telegram->sendMessage([
-                    'chat_id' => $message->getChat()->getId(),
-                    'text' => 'Sobre alguma coisa',
-                    'reply_to_message_id' => $message->getMessageId()
-                ]);
-                break;
-        }
+$update = $telegram->getWebhookUpdate();
+foreach(['InlineQuery', 'Command'] as $method) {
+    call_user_func([$telegram, 'process'.$method], $update);
+    if($telegram->getLastResponse()) {
+        break;
     }
 }
 
-$update = $telegram->processCommand($update);
+// $provider = \Base\Meetup::getProvider();
+// $token = \Base\UserMeta::getAccessToken($update->getMessage()->getFrom()->getId());
+//$request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/2/member/self', $token);
+//$request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/find/events', $token);
+// $request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/2/open_events?&sign=true&photo-host=public&text=phpsp&page=1&offset=3', $token);
+// $return = $provider->getResponse($request);
+// print_r($return);
