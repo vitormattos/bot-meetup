@@ -33,6 +33,7 @@ if($update->has('message')) {
     $accessToken = $UserMeta->getAccessToken($message->getFrom()->getId());
     if($accessToken) {
         $telegram->addCommand(Commands\LogoutCommand::class);
+        $telegram->removeCommand(Commands\StartCommand::class);
     }
     if($message->has('text')) {
         switch($text = $message->getText()) {
