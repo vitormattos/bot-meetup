@@ -3,13 +3,10 @@
 namespace Commands;
 
 use Telegram\Bot\Commands\Command;
-use Base\DB;
-use League\OAuth2\Client\Token\AccessToken;
-use Base\Meetup;
 use Telegram\Bot\Keyboard\Keyboard;
-use Aura\SqlQuery\QueryFactory;
-use Aura\Sql\Exception;
 use Telegram\Bot\Helpers\Emojify;
+use Base\DB;
+use Base\Meetup;
 use Base\UserMeta;
 /**
  * Class StartCommand.
