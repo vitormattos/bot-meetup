@@ -123,7 +123,7 @@ class StartCommand extends Command
         $sth->execute($select->getBindValues());
         $token = $sth->fetch(\PDO::FETCH_ASSOC);
         if(!$token) {
-            throw new \Exception('Ocorreu um erro durante a autenticação, tente novamente.', 1);
+            throw new \Exception('É preciso autenticar-se.', 1);
         }
         if(!$token['access_token']
             || ($oauth2state && $token['oauth2state'] != $oauth2state)) {
