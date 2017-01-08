@@ -26,7 +26,7 @@ $telegram->addCommands([
     Commands\StartCommand::class
 ]);
 
-$update = $telegram->commandsHandler(true);
+$update = $telegram->getWebhookUpdates();
 if($update->has('message')) {
     $message = $update->getMessage();
     $UserMeta = new UserMeta();
@@ -46,3 +46,5 @@ if($update->has('message')) {
         }
     }
 }
+
+$update = $telegram->processCommand($update);
