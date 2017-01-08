@@ -53,6 +53,15 @@ class Api extends \Telegram\Bot\Api
                         'parse_mode' => 'HTML',
                         'disable_web_page_preview' => true
                     ];
+                    try {
+                        $photo = $provider->getAuthenticatedRequest(
+                            'GET',
+                            'https://api.meetup.com/'.$result['group']['urlname'].'?&sign=true&photo-host=public&only=group_photo',
+                            $token
+                        );
+                        $photo = $provider->getResponse($photo);
+                        $items['thumb_url'] = $photo['group_photo']['thumb_link'];
+                    } catch(Exception $e) { }
                     $params['results'][] = InlineQueryResultArticle::make($items);
                 }
             }
