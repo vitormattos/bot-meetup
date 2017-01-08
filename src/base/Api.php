@@ -1,6 +1,10 @@
 <?php
 namespace Base;
 
+use function GuzzleHttp\json_decode;
+use Base32\Base32;
+use Telegram\Bot\Objects\InlineQuery\InlineQueryResultArticle;
+
 class Api extends \Telegram\Bot\Api
 {
     public function processInlineQuery(\Telegram\Bot\Objects\Update $update)
@@ -11,7 +15,7 @@ class Api extends \Telegram\Bot\Api
         $inlineQuery = $update->getInlineQuery();
         if($query = $inlineQuery->getQuery()) {
             $provider = Meetup::getProvider();
-            $token = UserMeta::getAccessToken($update->getMessage()->getFrom()->getId());
+            $token = UserMeta::getAccessToken($inlineQuery->getFrom()->getId());
             $offset = $inlineQuery->getOffset()?:0;
             $response = $provider->getAuthenticatedRequest(
                 'GET',
@@ -21,8 +25,8 @@ class Api extends \Telegram\Bot\Api
                 '&offset='.$offset,
                 $token
             );
-            $response = json_decode($provider->getResponse($response));
-            if(!$response->meta->total_count == 0) {
+            $response = $provider->getResponse($response);
+            if($response['meta']['total_count'] == 0) {
                 $params = [
                     'results' =>
                         [
@@ -36,19 +40,19 @@ class Api extends \Telegram\Bot\Api
                         ]
                     ];
             } else {
-                if($response->meta->next) {
-                    preg_match('/&offset=(?<offset>\d+)/', $response->meta->next, $next_offset);
+                if($response['meta']['next']) {
+                    preg_match('/&offset=(?<offset>\d+)/', $response['meta']['next'], $next_offset);
                     $params['next_offset'] = $next_offset['offset'];
                 } else {
                     $params['next_offset'] = '';
                 }
-                foreach($response->results as $result) {
-                    $encoded = rtrim(Base32::encode(gzdeflate($result->name, 9)), '=');
+                foreach($response['results'] as $result) {
+                    $encoded = rtrim(Base32::encode(gzdeflate($result['name'], 9)), '=');
                     $items = [
                         'id' => substr($encoded, 0, 63),
-                        'title' => $result->name,
-                        'message_text' => $result->name,
-                        'description' => $result->name,
+                        'title' => $result['name'],
+                        'message_text' => $result['name'],
+                        'description' => $result['name'],
                         'parse_mode' => 'HTML',
                         'disable_web_page_preview' => true
                     ];
