@@ -22,19 +22,13 @@ if(file_exists('.env')) {
 
 // Classic commands
 $telegram->addCommands([
-    Telegram\Bot\Commands\HelpCommand::class,
-    Commands\StartCommand::class
+    \Commands\HelpCommand::class,
+    \Commands\StartCommand::class
 ]);
 
 $update = $telegram->getWebhookUpdates();
 if($update->has('message')) {
     $message = $update->getMessage();
-    $UserMeta = new UserMeta();
-    $accessToken = $UserMeta->getAccessToken($message->getFrom()->getId());
-    if($accessToken) {
-        $telegram->addCommand(Commands\LogoutCommand::class);
-        $telegram->removeCommand('start');
-    }
     if($message->has('text')) {
         switch($text = $message->getText()) {
             case '/about':
