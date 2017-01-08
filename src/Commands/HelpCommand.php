@@ -36,8 +36,9 @@ class HelpCommand extends Command
             $accessToken = $UserMeta->getAccessToken($message->getFrom()->getId());
         } catch(\Exception $e) {}
         if($accessToken) {
-            $this->telegram->addCommand(\Commands\LogoutCommand::class);
             $this->telegram->removeCommand('start');
+        } else {
+            $this->telegram->removeCommand('logout');
         }
 
         $commands = $this->telegram->getCommands();

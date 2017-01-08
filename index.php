@@ -1,7 +1,6 @@
 <?php
 use Telegram\Bot\Api;
 use Telegram\Bot\Objects\Update;
-use Base\UserMeta;
 
 require 'vendor/autoload.php';
 
@@ -23,7 +22,8 @@ if(file_exists('.env')) {
 // Classic commands
 $telegram->addCommands([
     \Commands\HelpCommand::class,
-    \Commands\StartCommand::class
+    \Commands\StartCommand::class,
+    \Commands\LogoutCommand::class
 ]);
 
 $update = $telegram->getWebhookUpdates();

@@ -27,6 +27,7 @@ class LogoutCommand extends Command
     {
         $message = $this->update->getMessage();
         $telegram_id = $message->getFrom()->getId();
+        $db = DB::getInstance();
         $db->perform('DELETE FROM userdata WHERE telegram_id = :telegram_id', [
             'telegram_id' => $telegram_id
         ]);
