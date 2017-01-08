@@ -1,6 +1,7 @@
 <?php
 use Telegram\Bot\Api;
 use Telegram\Bot\Objects\Update;
+use Base\UserMeta;
 
 require 'vendor/autoload.php';
 
@@ -28,6 +29,11 @@ $telegram->addCommands([
 $update = $telegram->commandsHandler(true);
 if($update->has('message')) {
     $message = $update->getMessage();
+    $UserMeta = new UserMeta();
+    $accessToken = $UserMeta->getAccessToken($message->getFrom()->getId());
+    if($accessToken) {
+        $telegram->addCommand(Commands\LogoutCommand::class);
+    }
     if($message->has('text')) {
         switch($text = $message->getText()) {
             case '/about':

@@ -10,6 +10,7 @@ use Telegram\Bot\Keyboard\Keyboard;
 use Aura\SqlQuery\QueryFactory;
 use Aura\Sql\Exception;
 use Telegram\Bot\Helpers\Emojify;
+use Base\UserMeta;
 /**
  * Class StartCommand.
  */
@@ -32,8 +33,9 @@ class StartCommand extends Command
     {
         $message = $this->update->getMessage();
         $telegram_id = $message->getFrom()->getId();
+        $UserMeta = new UserMeta();
         try {
-            $ownerDetails = $this->getUser($telegram_id, $oauth2state);
+            $ownerDetails = $UserMeta->getUser($telegram_id, $oauth2state);
             $this->replyWithMessage([
                 'chat_id' => $message->getChat()->getId(),
                 'text' => 'Bem vindo '. $ownerDetails['name'] . '!',
@@ -65,79 +67,5 @@ class StartCommand extends Command
                 'reply_markup' => $reply_markup
             ]);
         }
-    }
-
-    /**
-     * 
-     * @param int $telegram_id
-     * @param int $oauth2state
-     * @throws \Exception
-     */
-    private function getUser($telegram_id = null, $oauth2state = null)
-    {
-        $token = $this->getAccessToken($telegram_id, $oauth2state);
-        $provider = Meetup::getProvider();
-        $db = DB::getInstance();
-        $accessToken = new AccessToken($token);
-        $ownerDetails = $provider->getResourceOwner($accessToken)->toArray();
-        if(array_key_exists('problem', $ownerDetails)) {
-            $db->perform('DELETE FROM userdata WHERE telegram_id = :telegram_id', [
-                'telegram_id' => $telegram_id
-            ]);
-            throw new \Exception($ownerDetails['problem'], 1);
-        } elseif($oauth2state) {
-            $db->perform(
-                'UPDATE userdata '.
-                'SET updated_at = now(), '.
-                '    oauth2state = null '.
-                'WHERE oauth2state = :oauth2state;', [
-                    'telegram_id' => $telegram_id,
-                    'oauth2state'    => $oauth2state
-                ]);
-        }
-        return $ownerDetails;
-    }
-    
-    /**
-     * Get the access token from current user
-     * 
-     * @param int $telegram_id
-     * @param int $oauth2state
-     * @throws \Exception
-     * @return array Access Token
-     */
-    private function getAccessToken($telegram_id = null, $oauth2state = null)
-    {
-        $db = DB::getInstance();
-        $query_factory = new QueryFactory($db->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME));
-        $select = $query_factory->newSelect();
-        $select
-            ->cols([
-                'token AS access_token',
-                'oauth2state'
-            ])
-            ->from('userdata');
-        $select->where('telegram_id = :telegram_id')
-               ->bindValue('telegram_id', $telegram_id);
-        $sth = $db->prepare($select->getStatement());
-        $sth->execute($select->getBindValues());
-        $token = $sth->fetch(\PDO::FETCH_ASSOC);
-        if(!$token) {
-            throw new \Exception('É preciso autenticar-se.', 1);
-        }
-        if(!$token['access_token']) {
-            $db->perform('DELETE FROM userdata WHERE telegram_id = :telegram_id', [
-                'telegram_id' => $telegram_id
-            ]);
-            throw new \Exception('É preciso autenticar-se.', 1);
-        }
-        if($oauth2state && $token['oauth2state'] != $oauth2state) {
-            $db->perform('DELETE FROM userdata WHERE telegram_id = :telegram_id', [
-                'telegram_id' => $telegram_id
-            ]);
-            throw new \Exception('Ocorreu um erro durante a autenticação, tente novamente.', 1);
-        }
-        unset($token['oauth2state']);
-        return $token;
     }
 }
