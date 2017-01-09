@@ -12,9 +12,10 @@ class Api extends \Telegram\Bot\Api
         }
         $inlineQuery = $update->getInlineQuery();
         if($query = $inlineQuery->getQuery()) {
-            $provider = Meetup::getProvider();
-            $token = UserMeta::getAccessToken($inlineQuery->getFrom()->getId());
             $offset = $inlineQuery->getOffset()?:0;
+
+            $provider = Meetup::getProvider();
+            $token = UserMeta::getAccessToken($telegram_id = $inlineQuery->getFrom()->getId());
             $response = $provider->getAuthenticatedRequest(
                 'GET',
                 'https://api.meetup.com/2/open_events?&sign=true&photo-host=public'.
@@ -24,7 +25,20 @@ class Api extends \Telegram\Bot\Api
                 $token
             );
             $response = $provider->getResponse($response);
-            if($response['meta']['total_count'] == 0) {
+            if(isset($response['problem'])) {
+                $db = DB::getInstance();
+                $db->perform('DELETE FROM userdata WHERE telegram_id = :telegram_id', [
+                    'telegram_id' => $telegram_id
+                ]);
+                $sth = $db->perform('INSERT INTO userdata (oauth2state, telegram_id) VALUES(:oauth2state, :telegram_id);', [
+                    'oauth2state' => $provider->getState(),
+                    'telegram_id' => $telegram_id
+                ]);
+                $params = [
+                    'switch_pm_text' => 'Please, login...',
+                    'switch_pm_parameter' => $provider->getState()
+                ];
+            } elseif($response['meta']['total_count'] == 0) {
                 $params = [
                     'results' =>
                         [
