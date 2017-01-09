@@ -26,17 +26,8 @@ class Api extends \Telegram\Bot\Api
             );
             $response = $provider->getResponse($response);
             if(isset($response['problem'])) {
-                $db = DB::getInstance();
-                $db->perform('DELETE FROM userdata WHERE telegram_id = :telegram_id', [
-                    'telegram_id' => $telegram_id
-                ]);
-                $sth = $db->perform('INSERT INTO userdata (oauth2state, telegram_id) VALUES(:oauth2state, :telegram_id);', [
-                    'oauth2state' => $provider->getState(),
-                    'telegram_id' => $telegram_id
-                ]);
                 $params = [
-                    'switch_pm_text' => 'Please, login...',
-                    'switch_pm_parameter' => $provider->getState()
+                    'switch_pm_text' => 'Please, login...'
                 ];
             } elseif($response['meta']['total_count'] == 0) {
                 $params = [
