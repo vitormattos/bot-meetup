@@ -39,5 +39,20 @@ foreach(['InlineQuery', 'Command'] as $method) {
 //$request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/2/member/self', $token);
 //$request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/find/events', $token);
 // $request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/2/open_events?&sign=true&photo-host=public&text=phpsp&page=1&offset=3', $token);
+// $request = $provider->getAuthenticatedRequest('POST', 'https://api.meetup.com/batch', $token, [
+//     'body' => json_encode([
+//         (object)[
+//             'path' => '/2/open_events',
+//             'params' => (object)[
+//                 'sign'=>true,
+//                 'photo-host'=>'public',
+//                 'page'=>10
+//             ]
+//         ],
+//         (object)[
+//             'path' => '/2/member/self'
+//         ]
+//     ])
+// ]);
 // $return = $provider->getResponse($request);
 // print_r($return);

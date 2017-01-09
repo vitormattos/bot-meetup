@@ -20,7 +20,7 @@ class Api extends \Telegram\Bot\Api
                 'GET',
                 'https://api.meetup.com/2/open_events?&sign=true&photo-host=public'.
                 '&text='.urlencode($query).
-                '&page=10'.
+                '&page=30'.
                 '&offset='.$offset,
                 $token
             );
@@ -65,7 +65,9 @@ class Api extends \Telegram\Bot\Api
                             $token
                         );
                         $photo = $provider->getResponse($photo);
-                        $items['thumb_url'] = $photo['group_photo']['thumb_link'];
+                        if($photo['group_photo']) {
+                            $items['thumb_url'] = $photo['group_photo']['thumb_link'];
+                        }
                     } catch(Exception $e) { }
                     $params['results'][] = InlineQueryResultArticle::make($items);
                 }
