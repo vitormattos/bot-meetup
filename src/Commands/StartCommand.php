@@ -26,13 +26,13 @@ class StartCommand extends Command
     /**
      * {@inheritdoc}
      */
-    public function handle($oauth2state)
+    public function handle()
     {
         $message = $this->update->getMessage();
         $telegram_id = $message->getFrom()->getId();
         $UserMeta = new UserMeta();
         try {
-            $ownerDetails = $UserMeta->getUser($telegram_id, $oauth2state);
+            $ownerDetails = $UserMeta->getUser($telegram_id);
             $this->replyWithMessage([
                 'chat_id' => $message->getChat()->getId(),
                 'text' => 'Bem vindo '. $ownerDetails['name'] . '!',

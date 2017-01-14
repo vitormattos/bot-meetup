@@ -11,9 +11,9 @@ class UserMeta
      * @param int $oauth2state
      * @throws \Exception
      */
-    public function getUser($telegram_id = null, $oauth2state = null)
+    public function getUser($telegram_id = null)
     {
-        $accessToken = $this->getAccessToken($telegram_id, $oauth2state);
+        $accessToken = $this->getAccessToken($telegram_id);
         $provider = Meetup::getProvider();
         $db = DB::getInstance();
         $ownerDetails = $provider->getResourceOwner($accessToken)->toArray();
@@ -34,18 +34,14 @@ class UserMeta
      * @throws \Exception
      * @return \League\OAuth2\Client\Token\AccessToken Access Token
      */
-    public static function getAccessToken($telegram_id = null, $oauth2state = null)
+    public static function getAccessToken($telegram_id = null)
     {
-        if($oauth2state && !preg_match('/^[a-f0-9]{32}$/', $oauth2state)) {
-            throw new \Exception('Ocorreu um erro durante a autenticação, tente novamente.', 1);
-        }
         $db = DB::getInstance();
         $query_factory = new QueryFactory($db->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME));
         $select = $query_factory->newSelect();
         $select
             ->cols([
-                'token AS access_token',
-                'oauth2state'
+                'token AS access_token'
             ])
             ->from('userdata')
             ->where('telegram_id = :telegram_id')
@@ -62,23 +58,6 @@ class UserMeta
             ]);
             throw new \Exception('É preciso autenticar-se.', 1);
         }
-        if($oauth2state && $token['oauth2state']) {
-            if($token['oauth2state'] != $oauth2state) {
-                $db->perform('DELETE FROM userdata WHERE telegram_id = :telegram_id', [
-                    'telegram_id' => $telegram_id
-                ]);
-                throw new \Exception('Ocorreu um erro durante a autenticação, tente novamente.', 1);
-            }
-            $db->perform(
-                'UPDATE userdata '.
-                'SET updated_at = now(), '.
-                '    oauth2state = null '.
-                'WHERE oauth2state = :oauth2state AND telegram_id = :telegram_id;', [
-                    'telegram_id' => $telegram_id,
-                    'oauth2state' => $oauth2state
-                ]);
-        }
-        unset($token['oauth2state']);
         return new AccessToken($token);
     }
 }
