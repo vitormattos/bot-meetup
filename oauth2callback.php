@@ -51,6 +51,8 @@ if (!isset($_GET['code']) || !preg_match('/^[a-f0-9]{32}$/', $_GET['code'])) {
         $sth = $db->prepare($update->getStatement());
         $sth->execute($update->getBindValues());
 
+        $ownerDetails = $provider->getResourceOwner($accessToken)->toArray();
+
         $telegram = new Api();
         $telegram->sendMessage([
             'chat_id' => $user['telegram_id'],
