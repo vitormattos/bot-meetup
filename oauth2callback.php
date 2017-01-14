@@ -17,12 +17,8 @@ if (!isset($_GET['code']) || !preg_match('/^[a-f0-9]{32}$/', $_GET['code'])) {
     exit('Invalid access');
 } else {
     try {
-        $provider = Meetup::getProvider();
-        // Try to get an access token using the authorization code grant.
-        $accessToken = $provider->getAccessToken('authorization_code', [
-            'code' => $_GET['code']
-        ]);
-
+        $db = DB::getInstance();
+        $query_factory = new QueryFactory($db->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME));
         $select = $query_factory->newSelect();
         $select
             ->cols([
@@ -38,8 +34,12 @@ if (!isset($_GET['code']) || !preg_match('/^[a-f0-9]{32}$/', $_GET['code'])) {
             throw new Exception('Usuário inválido');
         }
 
-        $db = DB::getInstance();
-        $query_factory = new QueryFactory($db->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME));
+        $provider = Meetup::getProvider();
+        // Try to get an access token using the authorization code grant.
+        $accessToken = $provider->getAccessToken('authorization_code', [
+            'code' => $_GET['code']
+        ]);
+
         $update = $query_factory->newUpdate();
         $update
             ->table('userdata')
@@ -50,18 +50,25 @@ if (!isset($_GET['code']) || !preg_match('/^[a-f0-9]{32}$/', $_GET['code'])) {
             ->bindValue('state', $_GET['state']);
         $sth = $db->prepare($update->getStatement());
         $sth->execute($update->getBindValues());
-        
+
         $telegram = new Api();
         $telegram->sendMessage([
             'chat_id' => $user['telegram_id'],
             'text' => 'Bem vindo '. $ownerDetails['name'] . '!'
         ]);
-
-        header(
-            'Location: https://telegram.me/'.getenv('TELEGRAM_USERNAME')
-        );
     } catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e) {
         // Failed to get the access token or user details.
-        exit($e->getMessage());
+        if(isset($user) && $user) {
+            $telegram = new Api();
+            $telegram->sendMessage([
+                'chat_id' => $user['telegram_id'],
+                'text' => $e->getMessage()
+            ]);
+        } else {
+            echo $e->getMessage();
+        }
     }
 }
+header(
+    'Location: https://telegram.me/'.getenv('TELEGRAM_USERNAME')
+);
