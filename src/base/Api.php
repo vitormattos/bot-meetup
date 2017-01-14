@@ -14,17 +14,16 @@ class Api extends \Telegram\Bot\Api
         if($query = $inlineQuery->getQuery()) {
             $offset = $inlineQuery->getOffset()?:0;
 
-            $provider = Meetup::getProvider();
             $token = UserMeta::getAccessToken($telegram_id = $inlineQuery->getFrom()->getId());
-            $response = $provider->getAuthenticatedRequest(
-                'GET',
-                'https://api.meetup.com/2/open_events?&sign=true&photo-host=public'.
+            $provider = Meetup::getProvider();
+            $provider->setToken($token->getToken());
+            $response = $provider->getCommand('GET',
+                '/2/open_events?&sign=true&photo-host=public'.
                 '&text='.urlencode($query).
-                '&page=30'.
+                '&page=5'.
                 '&offset='.$offset,
                 $token
             );
-            $response = $provider->getResponse($response);
             if(isset($response['problem'])) {
                 $params = [
                     'switch_pm_text' => 'Please, login...'
@@ -49,8 +48,10 @@ class Api extends \Telegram\Bot\Api
                 } else {
                     $params['next_offset'] = '';
                 }
+                $events = [];
                 foreach($response['results'] as $result) {
-                    $items = [
+                    $events[] = [
+                        'group_id' => $result['group']['id'],
                         'id' => $result['id'],
                         'title' => $result['name'],
                         'message_text' => $result['name'],
@@ -58,18 +59,30 @@ class Api extends \Telegram\Bot\Api
                         'parse_mode' => 'HTML',
                         'disable_web_page_preview' => true
                     ];
-                    try {
-                        $photo = $provider->getAuthenticatedRequest(
-                            'GET',
-                            'https://api.meetup.com/'.$result['group']['urlname'].'?&sign=true&photo-host=public&only=group_photo',
-                            $token
-                        );
-                        $photo = $provider->getResponse($photo);
-                        if($photo['group_photo']) {
-                            $items['thumb_url'] = $photo['group_photo']['thumb_link'];
+                    $commands[] = (object)[
+                        'path' => '/'.$result['group']['urlname'],
+                        'params' => [
+                            'sign' => true,
+                            'photo-host' => 'public',
+                            'only'=> 'id,group_photo'
+                        ]
+                    ];
+                }
+                $return = $provider->getCommand('POST', '/batch',
+                    'requests='.json_encode($commands)
+                );
+                foreach($return as $photo) {
+                    if(isset($photo['body']['group_photo']))
+                    foreach($events as $event_id => $event) {
+                        if($event['group_id'] == $photo['body']['id']) {
+                            $events[$event_id]['thumb_url'] =
+                                $photo['body']['group_photo']['thumb_link'];
                         }
-                    } catch(Exception $e) { }
-                    $params['results'][] = InlineQueryResultArticle::make($items);
+                    }
+                }
+                foreach($events as $event_id => $event) {
+                    unset($event[$event_id]['group_id']);
+                    $params['results'][] = InlineQueryResultArticle::make($event);
                 }
             }
         } else {
