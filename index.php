@@ -34,13 +34,25 @@ foreach(['InlineQuery', 'Command'] as $method) {
     }
 }
 
-// $provider = \Base\Meetup::getProvider();
 // $token = \Base\UserMeta::getAccessToken($update->getMessage()->getFrom()->getId());
-//$request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/2/member/self', $token);
-//$request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/find/events', $token);
+// $client = \Base\MeetupOAuthClient::factory(['token' => $token->getToken()]);
+// $command = $client->getEvents([
+//         'group_urlname' => 'php-rio',
+//         'status' => 'past,upcoming',
+//         'desc' => 'desc'
+// ]);
+// var_dump($command);
+// exit;
+// $request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/2/member/self', $token);
+// $request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/find/events', $token);
 // $request = $provider->getAuthenticatedRequest('GET', 'https://api.meetup.com/2/open_events?&sign=true&photo-host=public&text=phpsp&page=1&offset=3', $token);
-// $request = $provider->getAuthenticatedRequest('POST', 'https://api.meetup.com/batch', $token, [
-//     'body' => json_encode([
+// $provider = \Base\Meetup::getProvider();
+// $provider->setToken($token->getToken());
+// $return = $provider->getCommand('GET', '/2/member/self');
+// $return = $provider->getCommand('GET', '/find/events');
+// $return = $provider->getCommand('GET', '/2/open_events?&sign=true&photo-host=public&text=phpsp&page=2&offset=1');
+// $return = $provider->getCommand('POST', '/batch',
+//     'requests='.json_encode([
 //         (object)[
 //             'path' => '/2/open_events',
 //             'params' => (object)[
@@ -53,6 +65,5 @@ foreach(['InlineQuery', 'Command'] as $method) {
 //             'path' => '/2/member/self'
 //         ]
 //     ])
-// ]);
-// $return = $provider->getResponse($request);
+// );
 // print_r($return);
