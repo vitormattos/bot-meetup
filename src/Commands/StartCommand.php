@@ -26,7 +26,7 @@ class StartCommand extends Command
     /**
      * {@inheritdoc}
      */
-    public function handle()
+    public function handle($arguments)
     {
         $message = $this->update->getMessage();
         $telegram_id = $message->getFrom()->getId();
